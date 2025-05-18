@@ -1,7 +1,10 @@
 "use server";
 
+import { revalidatePath } from "next/cache";
+import Product from "../models/product.model";
 import { connectToDB } from "../mongoose";
 import { scrapeAmazonProduct } from "../scraper";
+import { getAveragePrice, getHighestPrice, getLowestPrice } from "../utils";
 
 export async function scrapeAndStoreProduct(productUrl: string) {
   if (!productUrl) return;
@@ -11,8 +14,44 @@ export async function scrapeAndStoreProduct(productUrl: string) {
     const scrapeProduct = await scrapeAmazonProduct(productUrl);
     if (!scrapeProduct) return;
 
+    let product = scrapeProduct;
+
+    const existingProduct = await Product.findOne({ url: scrapeProduct.url });
+
+    if (existingProduct) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const updatedPriceHistory: any = [
+        ...existingProduct.priceHistory,
+        { price: scrapeProduct.currentPrice },
+      ];
+
+      product = {
+        ...scrapeProduct,
+        priceHistory: updatedPriceHistory,
+        lowestPrice: getLowestPrice(updatedPriceHistory),
+        highestPrice: getHighestPrice(updatedPriceHistory),
+        averagePrice: getAveragePrice(updatedPriceHistory),
+      };
+    }
+
+    const newProduct = await Product.findOneAndUpdate(
+      { url: scrapeProduct.url },
+      product,
+      { upsert: true, new: true }
+    );
+
+    revalidatePath(`/products/${newProduct._id}`);
+
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
     throw new Error(`Failed to create/update product: ${error.message}`);
+  }
+}
+
+export async function getProductById(productId: string) {
+  try {
+    connectToDB();
+  } catch (error) {
+    console.log(error);
   }
 }
