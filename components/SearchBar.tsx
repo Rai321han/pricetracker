@@ -36,6 +36,7 @@ export default function SearchBar() {
       setIsLoading(true);
       //scrape the product page
       const product = await scrapeAndStoreProduct(searchPrompt);
+      console.log(product);
     } catch (error) {
       console.log(error);
     } finally {

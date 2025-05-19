@@ -33,8 +33,11 @@ export async function scrapeAmazonProduct(url: string) {
       $(".a-price.a-text-price.a-size-base .a-offscreen")
     );
 
-    const inStock =
-      $("#availability span").text().trim().toLowerCase() === "in stock";
+    const outOfStock = $("#availability span")
+      .text()
+      .trim()
+      .toLowerCase()
+      .includes("out");
 
     const images =
       $("#imageBlkFront").attr("data-a-dynamic-image") ||
@@ -63,7 +66,7 @@ export async function scrapeAmazonProduct(url: string) {
       category: "category",
       reviewsCount: 100,
       stars: 4.5,
-      isOutOfStock: !inStock,
+      isOutOfStock: outOfStock,
       description,
       lowestPrice: Number(currentPrice) || Number(originalPrice),
       highestPrice: Number(originalPrice) || Number(currentPrice),
