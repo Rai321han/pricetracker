@@ -26,7 +26,6 @@ export default function Navbar() {
 
         <div className="flex items-center gap-5">
           <TelegramLogin />
-          <div className="">Link telegram to notify</div>
           {navIcons.map((icon) => (
             <Image
               key={icon.alt}
