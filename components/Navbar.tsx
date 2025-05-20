@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import TelegramLogin from "./TelegramLogin";
 
 const navIcons = [
   { src: "/assets/icons/search.svg", alt: "search" },
@@ -24,6 +25,8 @@ export default function Navbar() {
         </Link>
 
         <div className="flex items-center gap-5">
+          <TelegramLogin />
+          <div className="">Link telegram to notify</div>
           {navIcons.map((icon) => (
             <Image
               key={icon.alt}
