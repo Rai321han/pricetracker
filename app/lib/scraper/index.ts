@@ -73,7 +73,6 @@ export async function scrapeAmazonProduct(url: string) {
       averagePrice: Number(currentPrice) || Number(originalPrice),
     };
     return data;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
     throw new Error(`Failed to scrape product: ${error.message}`);
   }

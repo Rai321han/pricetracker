@@ -1,8 +1,6 @@
 import { getProductById, getSimilarProducts } from "@/app/lib/actions";
 import { formatNumber } from "@/app/lib/utils";
 import Modal from "@/components/Modal";
-// import Modal from "@/components/Modal";
-
 import PriceInfoCard from "@/components/PriceInfoCard";
 import ProductCard from "@/components/ProductCard";
 import { Product } from "@/types";
@@ -11,12 +9,11 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 
 type Props = {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 };
 
-export default async function ProductDetails(props: Props) {
-  const { params } = props;
-  const id = params.id;
+export default async function ProductDetails({ params }: Props) {
+  const { id } = await params;
   const product: Product = await getProductById(id);
   if (!product) redirect("/");
 

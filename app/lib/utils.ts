@@ -1,6 +1,6 @@
 import { PriceHistoryItem } from "@/types";
 
-/* eslint-disable @typescript-eslint/no-explicit-any */
+
 export function extractPrice(...elements: any) {
   for (const element of elements) {
     const priceText = element.first().text().trim();
