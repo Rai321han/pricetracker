@@ -1,7 +1,5 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 "use server";
 import { EmailContent, EmailProductInfo, NotificationType } from "@/types";
-// import nodemailer from "nodemailer";
 import { Resend } from "resend";
 
 const Notification = {
@@ -80,34 +78,6 @@ export async function generateEmailBody(
 
   return { subject, body };
 }
-
-// const transporter = nodemailer.createTransport({
-//   pool: true,
-//   service: "hotmail",
-//   port: 2525,
-//   auth: {
-//     user: "pricetrackerapp@outlook.com",
-//     pass: process.env.EMAIL_PASSWORD,
-//   },
-//   maxConnections: 1,
-// });
-
-// export const sendEmail = async (
-//   emailContent: EmailContent,
-//   sendTo: string[]
-// ) => {
-//   const mailOptions = {
-//     from: "pricetrackerapp@outlook.com",
-//     to: sendTo,
-//     html: emailContent.body,
-//     subject: emailContent.subject,
-//   };
-
-//   transporter.sendMail(mailOptions, (error: any, info: any) => {
-//     if (error) console.log(error);
-//     console.log("Email sent: ", info);
-//   });
-// };
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 export const sendEmail = async (

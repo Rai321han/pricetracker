@@ -21,7 +21,7 @@ export async function scrapeAndStoreProduct(productUrl: string) {
     const existingProduct = await Product.findOne({ url: scrapeProduct.url });
 
     if (existingProduct) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
       const updatedPriceHistory: any = [
         ...existingProduct.priceHistory,
         { price: scrapeProduct.currentPrice },
@@ -44,7 +44,6 @@ export async function scrapeAndStoreProduct(productUrl: string) {
 
     revalidatePath(`/products/${newProduct._id}`);
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
     throw new Error(`Failed to create/update product: ${error.message}`);
   }
