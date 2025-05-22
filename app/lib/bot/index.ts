@@ -1,4 +1,6 @@
 import axios from "axios";
+import { connectToDB } from "../mongoose";
+import User from "../models/user.model";
 
 type Data = {
   name: string;
@@ -7,59 +9,24 @@ type Data = {
   oldPrice: number;
 };
 
-const notification = {
-  WELCOME: "WELCOME",
-  ALERT_PRICE: "ALERT_PRICE",
-  NEW_PRODUCT: "NEW_PRODUCT",
-};
-
-export function generateBotMessage(data: Data, notify: string) {
+export async function generateAlertMessage(data: Data) {
   let message = "";
   const { name, oldPrice, newPrice, url } = data;
 
-  switch (notify) {
-    case notification.WELCOME:
-      message = `
-            👋 *Welcome to Price Tracker Bot!*
+  const discount = Math.round(((oldPrice - newPrice) / oldPrice) * 100);
 
-            I'll help you track product prices and alert you when they drop. Here's what you can do:
+  let emphasis = "";
+  if (discount >= 50) {
+    emphasis = "🔥 Massive Deal!";
+  } else if (discount >= 30) {
+    emphasis = "⚡ Big Savings!";
+  } else if (discount >= 10) {
+    emphasis = "🔻 Price Drop!";
+  } else {
+    emphasis = "💸 Small Discount";
+  }
 
-            🔹 Add a product to track  
-            🔹 Get notified when the price drops  
-
-            To get started:
-            - Go to the site.
-            - Track a product price
-
-            You’ll get an alert when the price drops! 🎯
-            `;
-      break;
-    case notification.NEW_PRODUCT:
-      message = `
-    ✅ *Product added!*
-
-    I'm now tracking:
-    📦 *${name}*
-
-    🔔 You'll get a message when the price drops.
-    `;
-      break;
-
-    case notification.ALERT_PRICE:
-      const discount = Math.round(((oldPrice - newPrice) / oldPrice) * 100);
-
-      let emphasis = "";
-      if (discount >= 50) {
-        emphasis = "🔥 Massive Deal!";
-      } else if (discount >= 30) {
-        emphasis = "⚡ Big Savings!";
-      } else if (discount >= 10) {
-        emphasis = "🔻 Price Drop!";
-      } else {
-        emphasis = "💸 Small Discount";
-      }
-
-      message = `
+  message = `
         ${emphasis}
 
         📦 *${name}*
@@ -71,30 +38,62 @@ export function generateBotMessage(data: Data, notify: string) {
         👉 [View Product](${url})
         `;
 
-    default:
-      message = "Something went wrong!";
-      break;
+  return message;
+}
+
+export async function generateWelcomeUserMessage(userId?: number) {
+  let message = "";
+  if (userId) {
+    connectToDB();
+    const user = await User.findOne({ userId }, { products: 1 }); // Only fetch products
+    if (!user || !user.products)
+      return "Welcome. We couldn't find any products associated with this account.";
+    message = `👋 Welcome back!
+
+You're currently tracking 🛒 *${user.products.length} product(s)*. ${user.products.length > 0 ? "I'll keep an eye on them and alert you when the prices drop! 📉" : ""}
+
+Here’s what you can do:
+🔹 Add more products to track  
+🔹 Get notified instantly when prices fall
+
+To manage or add new tracked products:
+- Visit the website (https://db94-103-113-173-3.ngrok-free.app)
+- Start tracking more deals!
+
+Happy saving! 💰`;
+    return message;
   }
+  message = `
+  👋 *Welcome to Price Tracker Bot!*
+  
+  Currently, you are not tracking any product.
+  Here's what you can do:
+
+  🔹 Add a product to track  
+  🔹 Get notified when the price drops  
+
+  To get started:
+  - Go to the site.
+  - Track a product price
+
+  You’ll get an alert when the price drops! 🎯
+  `;
 
   return message;
 }
 
-export async function sendBotMessage(chatId: string, message: string) {
+export async function sendBotMessage(chatId: number, message: string) {
+  console.log(message);
   const urlAPI = `https://api.telegram.org/bot${process.env.PRICETRACKER_BOT_API_KEY}/sendMessage`;
 
-  axios
-    .post(urlAPI, {
+  try {
+    await axios.post(urlAPI, {
       chat_id: chatId,
       text: message,
       parse_mode: "Markdown",
-    })
-    .then(() => {
-      console.log("Message sent!");
-    })
-    .catch((err) => {
-      console.error(
-        "Failed to send message:",
-        err.response?.data || err.message
-      );
     });
+    console.log("Message sent!");
+  } catch (error) {
+    console.error("Failed to send message!", error);
+  }
 }
