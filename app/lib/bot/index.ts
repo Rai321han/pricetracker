@@ -63,20 +63,27 @@ To manage or add new tracked products:
 Happy saving! 💰`;
     return message;
   }
+  // message = `
+  // 👋 *Welcome to Price Tracker Bot!*
+
+  // Currently, you are not tracking any product.
+  // Here's what you can do:
+
+  // 🔹 Add a product to track
+  // 🔹 Get notified when the price drops
+
+  // To get started:
+  // - Go to the site.
+  // - Track a product price
+
+  // You’ll get an alert when the price drops! 🎯
+  // `;
+
   message = `
-  👋 *Welcome to Price Tracker Bot!*
+A bot is replying to you now. 
+More features are comming soon...
   
-  Currently, you are not tracking any product.
-  Here's what you can do:
-
-  🔹 Add a product to track  
-  🔹 Get notified when the price drops  
-
-  To get started:
-  - Go to the site.
-  - Track a product price
-
-  You’ll get an alert when the price drops! 🎯
+Developed by *Raihan Uddin*
   `;
 
   return message;
