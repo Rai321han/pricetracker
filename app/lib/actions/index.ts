@@ -1,12 +1,14 @@
 "use server";
-
 import { revalidatePath } from "next/cache";
 import Product from "../models/product.model";
 import { connectToDB } from "../mongoose";
 import { scrapeAmazonProduct } from "../scraper";
 import { getAveragePrice, getHighestPrice, getLowestPrice } from "../utils";
-import { User } from "@/types";
+import { TelegramUser, TUser } from "@/types";
 import { generateEmailBody, sendEmail } from "../nodemailer";
+import { createHash, createHmac } from "crypto";
+import { redirect } from "next/navigation";
+import User from "../models/user.model";
 
 export async function scrapeAndStoreProduct(productUrl: string) {
   if (!productUrl) return;
@@ -21,7 +23,6 @@ export async function scrapeAndStoreProduct(productUrl: string) {
     const existingProduct = await Product.findOne({ url: scrapeProduct.url });
 
     if (existingProduct) {
-
       const updatedPriceHistory: any = [
         ...existingProduct.priceHistory,
         { price: scrapeProduct.currentPrice },
@@ -43,7 +44,7 @@ export async function scrapeAndStoreProduct(productUrl: string) {
     );
 
     revalidatePath(`/products/${newProduct._id}`);
-
+    redirect(`/products/${newProduct._id}`);
   } catch (error: any) {
     throw new Error(`Failed to create/update product: ${error.message}`);
   }
@@ -97,7 +98,7 @@ export async function addUserEmailToProduct(
     if (!product) return;
 
     const userExists = product.users.some(
-      (user: User) => user.email === userEmail
+      (user: TUser) => user.email === userEmail
     );
 
     if (!userExists) {
@@ -112,3 +113,56 @@ export async function addUserEmailToProduct(
     console.log(error);
   }
 }
+
+const checkUserTelegramData = function (userData: TelegramUser) {
+  // making the secret key from token
+  const secret_key = createHash("sha256")
+    .update(`${process.env.PRICETRACKER_BOT_API_KEY}`)
+    .digest();
+
+  // making of data_check_string
+  const data_check_string = Object.entries(userData)
+    .filter(([key]) => key !== "hash") // remove the 'hash' field
+    .sort(([a], [b]) => a.localeCompare(b)) // sort by key
+    .map(([key, value]) => `${key}=${value}`)
+    .join("\n");
+
+  //validation
+  if (
+    createHmac("sha256", secret_key).update(data_check_string).digest("hex")
+  ) {
+    return true;
+  } else return false;
+};
+
+export const saveUserToDatabase = async function (userData: TelegramUser) {
+  if (!checkUserTelegramData(userData)) {
+    console.log("Invalid telegram data");
+    return;
+  }
+
+  try {
+    connectToDB();
+    await User.findOneAndUpdate(
+      { userId: userData.id },
+      {
+        $set: {
+          username: userData.username,
+          firstName: userData.first_name,
+          lastName: userData.last_name,
+          authDate: userData.auth_date,
+          hash: userData.hash,
+        },
+        $setOnInsert: {
+          chatId: null,
+          products: [],
+          userId: userData.id,
+        },
+      },
+      { upsert: true, new: true }
+    );
+    //sendBotMessage
+  } catch (error) {
+    console.log(error);
+  }
+};

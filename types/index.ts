@@ -2,7 +2,7 @@ export type PriceHistoryItem = {
   price: number;
 };
 
-export type User = {
+export type TUser = {
   email: string;
 };
 
@@ -24,7 +24,7 @@ export type Product = {
   reviewsCount: number;
   stars: number;
   isOutOfStock: boolean;
-  users?: User[];
+  users?: TUser[];
 };
 
 export type NotificationType =
@@ -41,4 +41,23 @@ export type EmailContent = {
 export type EmailProductInfo = {
   title: string;
   url: string;
+};
+
+export type TelegramUser = {
+  id: number;
+  first_name: string;
+  last_name: string;
+  username: string;
+  photo_url?: string;
+  auth_date: number;
+  hash: string;
+};
+
+export type User = {
+  userId: number;
+  username: string;
+  firstName: string;
+  lastName: string;
+  authDate: number;
+  hash: string;
 };

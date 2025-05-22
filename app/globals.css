@@ -13,7 +13,8 @@
 }
 
 @theme {
-  --color-primary: #e43030;
+  /* --color-primary: #e43030; */
+  --color-primary: #3e167a;
   --color-primary-orange: #d48d3b;
   --color-primary-green: #3e9242;
   --color-secondary: #282828;

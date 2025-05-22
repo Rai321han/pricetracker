@@ -14,14 +14,12 @@ export default function Navbar() {
       <nav className="nav">
         <Link href="/" className="flex items-center gap-1">
           <Image
-            src="/assets/icons/logo.svg"
+            src="/assets/icons/logo-new.svg"
             width={27}
             height={27}
             alt="logo"
           />
-          <p className="nav-logo">
-            Price<span className="text-primary">Tracker</span>
-          </p>
+          <p className="text-primary nav-logo">PriceTracker</p>
         </Link>
 
         <div className="flex items-center gap-5">
